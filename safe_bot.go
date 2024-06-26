@@ -32,7 +32,6 @@ func set_tools() (*sql.DB, *tgbotapi.BotAPI, tgbotapi.UpdatesChannel) {
 	if err != nil {
 		panic(err)
 	}
-	db.Exec("CREATE TABLE users (site VARCHAR(255), login VARCHAR(255), password VARCHAR(255))")
 	// Bot Settings
 	bot, err := tgbotapi.NewBotAPI("telegram_token")
 	if err != nil {
@@ -55,15 +54,19 @@ func the_bot() {
 
 	// Main loop
 	for update := range updates {
-
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "") // Create a new Message instance
 		current_user, ok := users[update.Message.Chat.ID]
 		if !ok {
 			current_user = User{update.Message.Chat.ID, update.Message.Chat.UserName, 0, Safe{}}
 		}
 
-		request := "create table if not exists" + current_user.name + " (site varchar(255), login varchar(255), pswd varchar(255)"
-		db.Exec(request)
+		msg := tgbotapi.NewMessage(current_user.id, "") // Create a new Message instance
+		log.Println(current_user.name + " is here!")
+		request := "CREATE TABLE IF NOT EXISTS " + current_user.name + " (site varchar(255), login varchar(255), pswd varchar(255))"
+		_, err := db.Exec(request)
+		if err != nil {
+			log.Panic(err)
+		}
+
 		// Ignore any non-Message Updates
 		if update.Message == nil {
 			continue
@@ -135,13 +138,13 @@ func to_write(user User, text string, db *sql.DB) (User, string) {
 }
 
 func write_data(db *sql.DB, user User) {
-	request := "INSERT INTO " + user.name + " (site, login, password) VALUES (?, ?, ?)"
+	request := "INSERT INTO " + user.name + " (site, login, pswd) VALUES (?, ?, ?)"
 	db.Exec(request, user.box.site, user.box.login, user.box.pswd)
 }
 
 func read_data(db *sql.DB, site string, bot *tgbotapi.BotAPI, user User) {
 	out := "..."
-	request := "SELECT login, password FROM " + user.name + " WHERE site =?"
+	request := "SELECT login, pswd FROM " + user.name + " WHERE site =?"
 	rows, err := db.Query(request, site)
 	if err != nil {
 		log.Panic(err)
