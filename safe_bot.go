@@ -28,12 +28,12 @@ func main() {
 
 func set_tools() (*sql.DB, *tg.BotAPI, tg.UpdatesChannel) {
 	// mySQL connecting
-	db, err := sql.Open("mysql", "root:6478Dan27468@tcp(localhost:3306)/boxes")
+	db, err := sql.Open("mysql", "root:password@tcp(localhost:3306)/boxes")
 	if err != nil {
 		panic(err)
 	}
 	// Bot Settings
-	bot, err := tg.NewBotAPI("7331775715:AAHuoEATEbHKVsagKrt5o3K2USEYiXOPfOo")
+	bot, err := tg.NewBotAPI("token")
 	if err != nil {
 		log.Panic(err)
 	}
